@@ -1,0 +1,64 @@
+# Pipeline CI/CD: en cada push se prueba el modelo y la API, se construye la
+# imagen Docker, se prueba el contenedor y (solo en main) se publica en GHCR.
+name: CI/CD - API deteccion de dano en autos
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  pruebas:
+    name: 1. Pruebas del modelo y la API
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Instalar dependencias
+        run: pip install -r requirements-api.txt pytest httpx
+
+      - name: Verificar artefactos del modelo
+        run: |
+          test -f modelo/modelo_autos_int8.onnx
+          test -f modelo/metadata.json
+          test -f modelo/referencia_drift.json
+          ls -lh modelo/
+
+      - name: Ejecutar pruebas (funcionales, errores, accuracy, latencia y drift)
+        run: pytest -v -s
+
+  docker:
+    name: 2. Construir y probar imagen Docker
+    needs: pruebas
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Construir imagen
+        run: docker build -t autos-api:${{ github.sha }} .
+
+      - name: Levantar contenedor
+        run: docker run -d --name autos-api -p 8000:8000 autos-api:${{ github.sha }}
+
+      - name: Esperar a que la API responda
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:8000/health && exit 0
+            sleep 2
+          done
+          docker logs autos-api
+          exit 1
+
+      - name: Prueba de inferencia dentro del contenedor
+        run: |
+          IMG=$(find tests/muestras -type f | head -n 1)
+          curl -sf -X POST http://localhost:8000/predict -F "archivo=@${IMG};type=image/jpe

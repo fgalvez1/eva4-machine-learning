@@ -1,0 +1,12 @@
+{
+  "clases": [
+    "danado",
+    "sin_dano"
+  ],
+  "img_size": [
+    224,
+    224
+  ],
+  "entrada": "imagen",
+  "salida": "Identity:0"
+}

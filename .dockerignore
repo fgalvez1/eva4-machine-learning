@@ -1,0 +1,8 @@
+venv/
+dataset/
+kaggle_autos/
+evidencias/
+__pycache__/
+modelo/*.keras
+modelo/*.npy
+modelo/modelo_autos_fp32.onnx

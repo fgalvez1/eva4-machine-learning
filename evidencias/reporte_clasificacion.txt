@@ -1,0 +1,11 @@
+Loss en prueba: 0.2536
+Accuracy en prueba: 88.92%
+
+              precision    recall  f1-score   support
+
+      Dañado      0.929     0.842     0.883       171
+    Sin daño      0.856     0.936     0.894       172
+
+    accuracy                          0.889       343
+   macro avg      0.893     0.889     0.889       343
+weighted avg      0.893     0.889     0.889       343

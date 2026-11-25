@@ -1,0 +1,11 @@
+venv/
+__pycache__/
+.pytest_cache/
+dataset/
+kaggle_autos/
+mlruns/
+mlflow.db
+mlartifacts/
+modelo/*.keras
+modelo/*.npy
+modelo/modelo_autos_fp32.onnx
